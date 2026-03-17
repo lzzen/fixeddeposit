@@ -72,9 +72,10 @@ $data = [
 $url .= '?' . http_build_query($data);
 
 ///////////////////new 2026/////////////////
-$address = '0xb7322abba8544b17002eb39d70ecb435b8af1257';
-$url = 'https://sepolia-api.ethplorer.io/getAddressInfo/'.$address.'?apiKey=EK-84XFr-QYfsUyf-j7jmG';
+$address = '0xD7349e91868Ce73401b584000f04fcc087296DdB';
+$url = 'https://api.binplorer.com/getAddressInfo/'.$address.'?apiKey=EK-84XFr-QYfsUyf-j7jmG';
 $resp = http_get($url, $header);
+// print_r($resp);
 
 function renderOKT($tokens)
 {
@@ -106,7 +107,7 @@ function render($tokens)
 {
     $table = ['titles' => [], 'rows' => []];
     foreach ($tokens as $token) {
-		$balance = substr($token['rawBalance'], 0, -$token['tokenInfo']['decimals']+4);
+		$balance = substr($token['rawBalance'], 0, -$token['tokenInfo']['decimals']+4)/10000;
         $token = [
             '合约地址' => $token['tokenInfo']['address'],
             '币种' => $token['tokenInfo']['name'],
@@ -114,7 +115,7 @@ function render($tokens)
             '市值(USD)' => 0, //sprintf('%.02f', $token['valueUsd']),
             '提取时间' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu">QUERY</button> <span></span>',
             '本站提取' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu_2">提现</button> <span></span>',
-            '操作' => '<a href="https://www.oklink.com/cn/okc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d" target="btcbank">查看合约</a>',
+            '操作' => '<a href="https://bscscan.com/address/0xd7349e91868ce73401b584000f04fcc087296ddb#readContract" target="btcbank">查看合约</a>',
 			//https://www.oklink.com/zh-hans/oktc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d
         ];
         if (empty($table['titles'])) $table['titles'] = array_keys($token);
@@ -133,8 +134,8 @@ function render($tokens)
 <html>
 
 <head>
-    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.2.0/dist/ethers.umd.min.js" type="application/javascript"></script>
+    <script src="jquery.min.js"></script>
+    <script src="ethers.umd.min.js" type="application/javascript"></script>
 </head>
 
 <body>
