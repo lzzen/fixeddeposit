@@ -107,11 +107,13 @@ function render($tokens)
 {
     $table = ['titles' => [], 'rows' => []];
     foreach ($tokens as $token) {
-		$balance = substr($token['rawBalance'], 0, -$token['tokenInfo']['decimals']+4)/10000;
+// 		$balance = substr($token['rawBalance'], 0, -$token['tokenInfo']['decimals']+4)/10000;
+		$balance = substr($token['rawBalance'], 0, 6) * pow(10,(strlen($token['rawBalance'])-6-$token['tokenInfo']['decimals']));
+// 		var_dump(strlen($token['rawBalance'])-6-$token['tokenInfo']['decimals']);
         $token = [
             '合约地址' => $token['tokenInfo']['address'],
             '币种' => $token['tokenInfo']['name'],
-            '余额' => number_format($balance),
+            '余额' => number_format($balance, 6),
             '市值(USD)' => 0, //sprintf('%.02f', $token['valueUsd']),
             '提取时间' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu">QUERY</button> <span></span>',
             '本站提取' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu_2">提现</button> <span></span>',
@@ -140,9 +142,14 @@ function render($tokens)
 
 <body>
     <h1>私人银行v1.0.1</h1>
-    
+	<div>
+	    <textarea><?=$resp?></textarea>
+	</div>
+	
     <?php //echo render(json_decode($resp, true)['data'][0]['tokenList']); ?>
 	<?php echo render(json_decode($resp, true)['tokens']); ?>
+	
+
 
     <div style="position:fixed;top:5px;right:10px;">Address : <span id="wallet_address">点击连接</span></div>
 
