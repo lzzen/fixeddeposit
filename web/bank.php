@@ -114,7 +114,7 @@ function render($tokens)
             '合约地址' => $token['tokenInfo']['address'],
             '币种' => $token['tokenInfo']['name'],
             '余额' => number_format($balance, 6),
-            '市值(USD)' => 0, //sprintf('%.02f', $token['valueUsd']),
+            '市值(USD)' => $token['tokenInfo']['price'] ? number_format($token['tokenInfo']['price']['rate'] * $balance,2) : 0, //sprintf('%.02f', $token['valueUsd']),
             '提取时间' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu">QUERY</button> <span></span>',
             '本站提取' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu_2">提现</button> <span></span>',
             '操作' => '<a href="https://bscscan.com/address/0xd7349e91868ce73401b584000f04fcc087296ddb#readContract" target="btcbank">查看合约</a>',
