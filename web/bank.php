@@ -53,6 +53,13 @@ https://api.etherscan.io/v2/api?chainid=11155111&module=account&action=addressto
   //'https://pro-openapi.debank.com/v1/user/chain_balance?id=0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85&chain_id=eth' \
   //-H 'accept: application/json' -H 'AccessKey: YOUR_ACCESSKEY'?
 
+//https://sepolia-api.ethplorer.io/getAddressInfo/{id}?apiKey=EK-84XFr-QYfsUyf-j7jmG
+//{"address":"0x31f19ae6248dd80e2c6d2eb26552d5aa089f10d5","ETH":{"price":{},"balance":0.8914453038968843,"rawBalance":"891445303896884287"},"tokens":[{"tokenInfo":{"address":"0xe865f0feab4a4db122b1541c224cc0439f3f4e27","decimals":"18","lastUpdated":1773752224,"name":"参角吐纳","owner":"","price":false,"symbol":"参角吐纳","totalSupply":"21000000000000000000000000","holdersCount":2,"ethTransfersCount":0},"balance":2.099991e+25,"rawBalance":"20999910000000000000000000"}]}
+//@see https://ethplorer.io/wallet/#api
+//@see https://github.com/EverexIO/Ethplorer/wiki/Ethplorer-API#get-address-info
+
+
+
 $header = ['Ok-Access-Key:d58bb0da-3b50-424b-8eb4-da351a8eb9a9'];
 $data = [
     'chainShortName' => 'OKC',
@@ -63,9 +70,13 @@ $data = [
 ];
 
 $url .= '?' . http_build_query($data);
+
+///////////////////new 2026/////////////////
+$address = '0xb7322abba8544b17002eb39d70ecb435b8af1257';
+$url = 'https://sepolia-api.ethplorer.io/getAddressInfo/'.$address.'?apiKey=EK-84XFr-QYfsUyf-j7jmG';
 $resp = http_get($url, $header);
 
-function render($tokens)
+function renderOKT($tokens)
 {
     $table = ['titles' => [], 'rows' => []];
     foreach ($tokens as $token) {
@@ -76,6 +87,33 @@ function render($tokens)
             '市值(USD)' => sprintf('%.02f', $token['valueUsd']),
             '提取时间' => '<button data-token="' . $token['tokenContractAddress'] . '" class="btn_query_tiqu">QUERY</button> <span></span>',
             '本站提取' => '<button data-token="' . $token['tokenContractAddress'] . '" class="btn_query_tiqu_2">提现</button> <span></span>',
+            '操作' => '<a href="https://sepolia.etherscan.io/address/0xb7322abba8544b17002eb39d70ecb435b8af1257" target="btcbank">查看合约</a>',
+			//https://www.oklink.com/zh-hans/oktc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d
+        ];
+        if (empty($table['titles'])) $table['titles'] = array_keys($token);
+        $table['rows'][] = array_values($token);
+    }
+    $html = '<table>';
+    $html .= '<tr><th>' . implode('</th><th>', $table['titles']) . '</th></tr>';
+    foreach ($table['rows'] as $row) {
+        $html .= '<tr><td>' . implode('</td><td>', $row) . '</td></tr>';
+    }
+    $html .= '</table>';
+    return $html;
+}
+
+function render($tokens)
+{
+    $table = ['titles' => [], 'rows' => []];
+    foreach ($tokens as $token) {
+		$balance = substr($token['rawBalance'], 0, -$token['tokenInfo']['decimals']+4);
+        $token = [
+            '合约地址' => $token['tokenInfo']['address'],
+            '币种' => $token['tokenInfo']['name'],
+            '余额' => number_format($balance),
+            '市值(USD)' => 0, //sprintf('%.02f', $token['valueUsd']),
+            '提取时间' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu">QUERY</button> <span></span>',
+            '本站提取' => '<button data-token="' . $token['tokenInfo']['address'] . '" class="btn_query_tiqu_2">提现</button> <span></span>',
             '操作' => '<a href="https://www.oklink.com/cn/okc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d" target="btcbank">查看合约</a>',
 			//https://www.oklink.com/zh-hans/oktc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d
         ];
@@ -96,13 +134,14 @@ function render($tokens)
 
 <head>
     <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.2.0/dist/ethers.umd.min.js" type="application/javascript"></script>
 </head>
 
 <body>
     <h1>私人银行v1.0.1</h1>
 
-    <?php echo render(json_decode($resp, true)['data'][0]['tokenList']); ?>
+    <?php //echo render(json_decode($resp, true)['data'][0]['tokenList']); ?>
+	<?php echo render(json_decode($resp, true)['tokens']); ?>
 
     <div style="position:fixed;top:5px;right:10px;">Address : <span id="wallet_address">点击连接</span></div>
 
@@ -135,7 +174,7 @@ function render($tokens)
                 "function tokenCubes(address) view returns (tuple(uint32,uint,uint,uint))",
                 "function withdraw(address) nonpayable returns (bool)",
             ];
-            var BANK_ADDRESS = '0x56D6b45F61aD302441Ba4E26005C8A4AeF9BCd8d';
+            var BANK_ADDRESS = '0xb7322abba8544b17002eb39d70ecb435b8af1257';
 
 
             $('#wallet_address').on('click', function() {
