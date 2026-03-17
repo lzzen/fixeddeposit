@@ -140,12 +140,16 @@ function render($tokens)
 
 <body>
     <h1>私人银行v1.0.1</h1>
-
+    
     <?php //echo render(json_decode($resp, true)['data'][0]['tokenList']); ?>
 	<?php echo render(json_decode($resp, true)['tokens']); ?>
 
     <div style="position:fixed;top:5px;right:10px;">Address : <span id="wallet_address">点击连接</span></div>
 
+
+
+    <div style="position:fixed;bottom:10px;text-align:center;width:100%;color:#ccc;font-size:8px"><b>Bank Contract Address: </b><?=$address?></div>
+    
     <script>
 
         //php + jquery + metamask + ethers.js
