@@ -1,0 +1,207 @@
+<?php
+
+//#1 报错： [ethjs-query] while formatting outputs from RPC '{"value":{"code":-32603,"data":{"code":-32000,"message":"rlp: expected input list for types.TxData"}}}'
+//解决：换个浏览器就好了。微软Edge不行，换火狐后可以了。（oklink浏览器使用场景）这里也可以试下
+
+function http_get($url, $aHeader = 1)
+{
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_TIMEOUT, 5000);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    // curl_setopt($curl,CURLOPT_USERAGENT,$_SERVER['HTTP_USER_AGENT']);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $aHeader);
+    // if($type == 1){
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    // }
+    $res = curl_exec($curl);
+    if ($res) {
+        curl_close($curl);
+        return $res;
+    } else {
+        $error = curl_errno($curl);
+        curl_close($curl);
+        return $error;
+    }
+}
+
+function http_post($sUrl, $aHeader, $aData)
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_URL, $sUrl);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $aHeader);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($aData));
+    $sResult = curl_exec($ch);
+    if ($sError = curl_error($ch)) {
+        die($sError);
+    }
+    curl_close($ch);
+    return $sResult;
+}
+// ————————————————
+// 版权声明：本文为CSDN博主「江南极客」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+// 原文链接：https://blog.csdn.net/sinat_35861727/article/details/87184042
+$url = 'https://www.oklink.com/api/v5/explorer/address/address-balance-fills';
+
+https://api.etherscan.io/v2/api?chainid=11155111&module=account&action=addresstokenbalance&address=0x983e3660c0bE01991785F80f266A84B911ab59b0&page=1&offset=100&apikey=PZJEDUF4JTPHJP42UD2STHEK1YP8J25PK6
+
+//@see https://docs.etherscan.io/api-reference/endpoint/addresstokenbalance?playground=open
+//@see curl -X 'GET' \
+  //'https://pro-openapi.debank.com/v1/user/chain_balance?id=0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85&chain_id=eth' \
+  //-H 'accept: application/json' -H 'AccessKey: YOUR_ACCESSKEY'?
+
+$header = ['Ok-Access-Key:d58bb0da-3b50-424b-8eb4-da351a8eb9a9'];
+$data = [
+    'chainShortName' => 'OKC',
+    'address' => '0x56D6b45F61aD302441Ba4E26005C8A4AeF9BCd8d', //bank address
+    'protocolType' => 'token_20',
+    'page' => 1,
+    'limit' => 20,
+];
+
+$url .= '?' . http_build_query($data);
+$resp = http_get($url, $header);
+
+function render($tokens)
+{
+    $table = ['titles' => [], 'rows' => []];
+    foreach ($tokens as $token) {
+        $token = [
+            '合约地址' => $token['tokenContractAddress'],
+            '币种' => $token['token'],
+            '余额' => $token['holdingAmount'],
+            '市值(USD)' => sprintf('%.02f', $token['valueUsd']),
+            '提取时间' => '<button data-token="' . $token['tokenContractAddress'] . '" class="btn_query_tiqu">QUERY</button> <span></span>',
+            '本站提取' => '<button data-token="' . $token['tokenContractAddress'] . '" class="btn_query_tiqu_2">提现</button> <span></span>',
+            '操作' => '<a href="https://www.oklink.com/cn/okc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d" target="btcbank">查看合约</a>',
+			//https://www.oklink.com/zh-hans/oktc/address/0x56d6b45f61ad302441ba4e26005c8a4aef9bcd8d
+        ];
+        if (empty($table['titles'])) $table['titles'] = array_keys($token);
+        $table['rows'][] = array_values($token);
+    }
+    $html = '<table>';
+    $html .= '<tr><th>' . implode('</th><th>', $table['titles']) . '</th></tr>';
+    foreach ($table['rows'] as $row) {
+        $html .= '<tr><td>' . implode('</td><td>', $row) . '</td></tr>';
+    }
+    $html .= '</table>';
+    return $html;
+}
+
+?>
+<html>
+
+<head>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+</head>
+
+<body>
+    <h1>私人银行v1.0.1</h1>
+
+    <?php echo render(json_decode($resp, true)['data'][0]['tokenList']); ?>
+
+    <div style="position:fixed;top:5px;right:10px;">Address : <span id="wallet_address">点击连接</span></div>
+
+    <script>
+
+        //php + jquery + metamask + ethers.js
+        var provider = null;
+
+        async function connectToMetamask() {
+            const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+            // Prompt user for account connections
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const addr = await signer.getAddress();
+            console.log("Account:", addr);
+            $('#wallet_address').text(addr)
+        }
+
+        $(function() {
+
+            if (typeof window.ethereum !== 'undefined') {
+                connectToMetamask();
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+            } else {
+                provider = new ethers.providers.JsonRpcProvider("https://exchainrpc.okex.org/");
+                console.log(provider);
+            }
+            var Abi = [
+                "function owner() view returns (address)",
+                "function tokenCubes(address) view returns (tuple(uint32,uint,uint,uint))",
+                "function withdraw(address) nonpayable returns (bool)",
+            ];
+            var BANK_ADDRESS = '0x56D6b45F61aD302441Ba4E26005C8A4AeF9BCd8d';
+
+
+            $('#wallet_address').on('click', function() {
+                if(!window.ethereum){
+                    alert("请先安装Metamask浏览器扩展");
+                    return false;
+                }
+                connectToMetamask();
+            });
+
+
+            $('.btn_query_tiqu').click(function() {
+                var tokenAddr = $(this).attr('data-token');
+                console.log(tokenAddr);
+
+                var Token = new ethers.Contract(BANK_ADDRESS, Abi, provider);
+                Token.tokenCubes(tokenAddr).then(res => {
+                    let lastWithdrawTime = res[0];
+                    var timestamp = Date.parse(new Date()) / 1000;
+                    let period = 86400 * 7;
+                    if (lastWithdrawTime + period < timestamp) {
+                        $(this).next('span').text('能');
+                    } else {
+                        let lefttime = lastWithdrawTime + period - timestamp;
+                        let leftword = Math.floor(lefttime / 86400) + '天' +
+                            Math.floor(lefttime % 86400 / 3600) + '小时' +
+                            Math.floor(lefttime % 86400 % 3600 / 60) + '分钟';
+
+                        $(this).next('span').text(leftword);
+                    }
+                });
+            })
+            $('.btn_query_tiqu_2').click(function() {
+                if(!window.ethereum){
+                    alert("请先安装Metamask浏览器扩展");
+                    return false;
+                }
+                var tokenAddr = $(this).attr('data-token');
+                console.log(tokenAddr);
+                const signer = provider.getSigner();
+                var Token0 = new ethers.Contract(BANK_ADDRESS, Abi, provider);
+                var Token = Token0.connect(signer);
+                signer.getAddress().then(res => {
+                    console.log(res);
+                })
+                Token.tokenCubes(tokenAddr).then(res => {
+                    let lastWithdrawTime = res[0];
+                    var timestamp = Date.parse(new Date()) / 1000;
+                    let period = 86400 * 7;
+                    if (lastWithdrawTime + period < timestamp) {
+                        Token.withdraw(tokenAddr).then(res => {
+                            console.log(res);
+                            alert('withdraw success')
+                            return;
+                        });
+                    } else {
+                        let lefttime = lastWithdrawTime + period - timestamp;
+                        let leftword = Math.floor(lefttime / 86400) + '天' +
+                            Math.floor(lefttime % 86400 / 3600) + '小时' +
+                            Math.floor(lefttime % 86400 % 3600 / 60) + '分钟';
+                        alert(leftword + ' 后可提取');
+                    }
+                });
+            })
+        })
+    </script>
+</body>
+
+</html>
