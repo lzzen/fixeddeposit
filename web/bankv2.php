@@ -161,7 +161,7 @@ function render($data)
 </head>
 
 <body>
-    <h1>私人银行v1.0.1</h1>
+    <h1>私人银行v1.2.0</h1>
 	<div>
 	    <textarea><?=$resp?></textarea>
 	</div>
