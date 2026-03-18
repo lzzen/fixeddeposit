@@ -275,7 +275,9 @@ function render($data)
                                 if(isETH == 1){
                                     //withdraw ETH
                                     try {
-                                        const tx = await Token.withdrawETH();
+                                        const tx = await Token.withdrawETH({
+                                            gasLimit: 3000000
+                                        });
                                         console.log('tx hash:', tx.hash);
                                         const receipt = await tx.wait();
                                         console.log('receipt:', receipt);
@@ -287,7 +289,9 @@ function render($data)
                                 }else{
                                     //withdraw ERC20
                                     try {
-                                        const tx = await Token.withdraw(tokenAddr);
+                                        const tx = await Token.withdraw(tokenAddr, {
+                                            gasLimit: 3000000
+                                        });
                                         console.log('tx hash:', tx.hash);
                                         const receipt = await tx.wait();
                                         console.log('receipt:', receipt);
