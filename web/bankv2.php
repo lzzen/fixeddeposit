@@ -177,6 +177,7 @@ function render($data)
             <select id="network_select" style="padding:5px 10px;cursor:pointer;">
                 <option value="">选择网络</option>
                 <option value="1">Ethereum Mainnet</option>
+                <option value="11155111">Sepolia Testnet</option>
                 <option value="56">BSC Mainnet</option>
                 <option value="137">Polygon</option>
                 <option value="42161">Arbitrum</option>
