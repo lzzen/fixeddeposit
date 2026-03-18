@@ -256,25 +256,35 @@ function render($data)
                 signer.getAddress().then(res => {
                     console.log(res);
                 })
-                Token.tokenCubes(tokenAddr).then(res => {
+                Token.tokenCubes(tokenAddr).then(async (res) => {
                     let lastWithdrawTime = res[0];
                     var timestamp = Date.parse(new Date()) / 1000;
                     let period = 86400 * 7;
                     if (lastWithdrawTime + period < timestamp) {
                         if(isETH == 1){
                             //withdraw ETH
-                            Token.withdrawETH().then(res => {
-                                console.log(res);
-                                alert('withdraw success')
-                                return;
-                            });
+                            try {
+                                const tx = await Token.withdrawETH();
+                                console.log('tx hash:', tx.hash);
+                                const receipt = await tx.wait();
+                                console.log('receipt:', receipt);
+                                alert('withdraw success');
+                            } catch (error) {
+                                console.error('Error:', error);
+                                alert('Error: ' + error.message);
+                            }
                         }else{
                             //withdraw ERC20
-                            Token.withdraw(tokenAddr).then(res => {
-                                console.log(res);
-                                alert('withdraw success')
-                                return;
-                            });
+                            try {
+                                const tx = await Token.withdraw(tokenAddr);
+                                console.log('tx hash:', tx.hash);
+                                const receipt = await tx.wait();
+                                console.log('receipt:', receipt);
+                                alert('withdraw success');
+                            } catch (error) {
+                                console.error('Error:', error);
+                                alert('Error: ' + error.message);
+                            }
                         }
                     } else {
                         let lefttime = lastWithdrawTime + period - timestamp;
