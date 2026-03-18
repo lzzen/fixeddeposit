@@ -253,45 +253,61 @@ function render($data)
                 const signer = provider.getSigner();
                 var Token0 = new ethers.Contract(BANK_ADDRESS, Abi, provider);
                 var Token = Token0.connect(signer);
-                signer.getAddress().then(res => {
-                    console.log(res);
-                })
-                Token.tokenCubes(tokenAddr).then(async (res) => {
-                    let lastWithdrawTime = res[0];
-                    var timestamp = Date.parse(new Date()) / 1000;
-                    let period = 86400 * 7;
-                    if (lastWithdrawTime + period < timestamp) {
-                        if(isETH == 1){
-                            //withdraw ETH
-                            try {
-                                const tx = await Token.withdrawETH();
-                                console.log('tx hash:', tx.hash);
-                                const receipt = await tx.wait();
-                                console.log('receipt:', receipt);
-                                alert('withdraw success');
-                            } catch (error) {
-                                console.error('Error:', error);
-                                alert('Error: ' + error.message);
-                            }
-                        }else{
-                            //withdraw ERC20
-                            try {
-                                const tx = await Token.withdraw(tokenAddr);
-                                console.log('tx hash:', tx.hash);
-                                const receipt = await tx.wait();
-                                console.log('receipt:', receipt);
-                                alert('withdraw success');
-                            } catch (error) {
-                                console.error('Error:', error);
-                                alert('Error: ' + error.message);
-                            }
+                signer.getAddress().then(async (userAddr) => {
+                    console.log('User Address:', userAddr);
+                    
+                    // 检查是否为 Owner
+                    try {
+                        const ownerAddr = await Token.owner();
+                        console.log('Owner Address:', ownerAddr);
+                        
+                        if (userAddr.toLowerCase() !== ownerAddr.toLowerCase()) {
+                            alert('只有合约 Owner 能提取');
+                            return;
                         }
-                    } else {
-                        let lefttime = lastWithdrawTime + period - timestamp;
-                        let leftword = Math.floor(lefttime / 86400) + '天' +
-                            Math.floor(lefttime % 86400 / 3600) + '小时' +
-                            Math.floor(lefttime % 86400 % 3600 / 60) + '分钟';
-                        alert(leftword + ' 后可提取');
+                        
+                        // 检查提取时间和执行提取
+                        Token.tokenCubes(tokenAddr).then(async (res) => {
+                            let lastWithdrawTime = res[0];
+                            var timestamp = Date.parse(new Date()) / 1000;
+                            let period = 86400 * 7;
+                            if (lastWithdrawTime + period < timestamp) {
+                                if(isETH == 1){
+                                    //withdraw ETH
+                                    try {
+                                        const tx = await Token.withdrawETH();
+                                        console.log('tx hash:', tx.hash);
+                                        const receipt = await tx.wait();
+                                        console.log('receipt:', receipt);
+                                        alert('withdraw success');
+                                    } catch (error) {
+                                        console.error('Error:', error);
+                                        alert('Error: ' + error.message);
+                                    }
+                                }else{
+                                    //withdraw ERC20
+                                    try {
+                                        const tx = await Token.withdraw(tokenAddr);
+                                        console.log('tx hash:', tx.hash);
+                                        const receipt = await tx.wait();
+                                        console.log('receipt:', receipt);
+                                        alert('withdraw success');
+                                    } catch (error) {
+                                        console.error('Error:', error);
+                                        alert('Error: ' + error.message);
+                                    }
+                                }
+                            } else {
+                                let lefttime = lastWithdrawTime + period - timestamp;
+                                let leftword = Math.floor(lefttime / 86400) + '天' +
+                                    Math.floor(lefttime % 86400 / 3600) + '小时' +
+                                    Math.floor(lefttime % 86400 % 3600 / 60) + '分钟';
+                                alert(leftword + ' 后可提取');
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error getting owner:', error);
+                        alert('Error: ' + error.message);
                     }
                 });
             })
