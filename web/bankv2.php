@@ -172,7 +172,19 @@ function render($data)
 
 
     <div style="position:fixed;top:5px;right:10px;text-align:right;">
-        <div>Network: <span id="network_name">未连接</span> <button id="switch_network" style="padding:5px 10px;cursor:pointer;">切换网络</button></div>
+        <div>
+            Network: <span id="network_name">未连接</span>
+            <select id="network_select" style="padding:5px 10px;cursor:pointer;">
+                <option value="">选择网络</option>
+                <option value="1">Ethereum Mainnet</option>
+                <option value="56">BSC Mainnet</option>
+                <option value="137">Polygon</option>
+                <option value="42161">Arbitrum</option>
+                <option value="10">Optimism</option>
+                <option value="43114">Avalanche</option>
+                <option value="250">Fantom</option>
+            </select>
+        </div>
         <div style="margin-top:5px;">Address : <span id="wallet_address" style="cursor:pointer;">点击连接</span></div>
     </div>
 
@@ -205,8 +217,16 @@ function render($data)
                 11155111: 'Sepolia Testnet',
                 56: 'BSC Mainnet',
                 97: 'BSC Testnet',
-                137: 'Polygon Mainnet',
-                80001: 'Polygon Mumbai'
+                137: 'Polygon',
+                80001: 'Polygon Mumbai',
+                42161: 'Arbitrum',
+                421614: 'Arbitrum Sepolia',
+                10: 'Optimism',
+                11155420: 'Optimism Sepolia',
+                43114: 'Avalanche',
+                43113: 'Avalanche Fuji',
+                250: 'Fantom',
+                4002: 'Fantom Testnet'
             };
             const name = networkNames[network.chainId] || `Chain ID: ${network.chainId}`;
             $('#network_name').text(name);
@@ -222,11 +242,41 @@ function render($data)
                 // 如果网络不存在，尝试添加
                 if (switchError.code === 4902) {
                     const chainConfigs = {
-                        11155111: {
-                            chainId: '0x' + (11155111).toString(16),
-                            chainName: 'Sepolia',
-                            rpcUrls: ['https://sepolia.infura.io/v3/'],
-                            blockExplorerUrls: ['https://sepolia.etherscan.io']
+                        56: {
+                            chainId: '0x38',
+                            chainName: 'Binance Smart Chain',
+                            rpcUrls: ['https://bsc-dataseed.binance.org'],
+                            blockExplorerUrls: ['https://bscscan.com']
+                        },
+                        137: {
+                            chainId: '0x89',
+                            chainName: 'Polygon',
+                            rpcUrls: ['https://polygon-rpc.com'],
+                            blockExplorerUrls: ['https://polygonscan.com']
+                        },
+                        42161: {
+                            chainId: '0xa4b1',
+                            chainName: 'Arbitrum One',
+                            rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+                            blockExplorerUrls: ['https://arbiscan.io']
+                        },
+                        10: {
+                            chainId: '0xa',
+                            chainName: 'Optimism',
+                            rpcUrls: ['https://mainnet.optimism.io'],
+                            blockExplorerUrls: ['https://optimistic.etherscan.io']
+                        },
+                        43114: {
+                            chainId: '0xa86a',
+                            chainName: 'Avalanche',
+                            rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+                            blockExplorerUrls: ['https://snowtrace.io']
+                        },
+                        250: {
+                            chainId: '0xfa',
+                            chainName: 'Fantom Opera',
+                            rpcUrls: ['https://rpc.ftm.tools'],
+                            blockExplorerUrls: ['https://ftmscan.com']
                         }
                     };
                     if (chainConfigs[chainId]) {
@@ -273,13 +323,15 @@ function render($data)
                 connectToMetamask();
             });
             
-            $('#switch_network').on('click', function() {
+            $('#network_select').on('change', function() {
+                const chainId = parseInt($(this).val());
+                if(!chainId) return;
+                
                 if(!window.ethereum){
                     alert("请先安装Metamask浏览器扩展");
                     return false;
                 }
-                // 切换到 Sepolia 测试网 (11155111)
-                switchToNetwork(11155111);
+                switchToNetwork(chainId);
             });
             
             // 监听网络变化
