@@ -148,6 +148,7 @@ function render($data)
 
 
     <div style="position:fixed;top:5px;right:10px;text-align:right;">
+        <div style="margin:5px 0 5px 0;">Account : <span id="wallet_address" style="cursor:pointer;">点击连接</span></div>
         <div>
             Network: <span id="network_name">未连接</span>
             <select id="network_select" style="padding:5px 10px;cursor:pointer;">
@@ -162,7 +163,6 @@ function render($data)
                 <option value="250">Fantom</option>
             </select>
         </div>
-        <div style="margin-top:5px;">Address : <span id="wallet_address" style="cursor:pointer;">点击连接</span></div>
     </div>
 
 
