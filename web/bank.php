@@ -141,7 +141,7 @@ function render($tokens)
 </head>
 
 <body>
-    <h1>私人银行v1.0.1</h1>
+    <h1>私人银行v1.1.0</h1>
 	<div>
 	    <textarea><?=$resp?></textarea>
 	</div>
