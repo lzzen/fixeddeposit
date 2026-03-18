@@ -289,7 +289,7 @@ function render($data)
             // ];
             var Abi = [{"inputs":[],"stateMutability":"payable","type":"constructor"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address payable","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"name":"tokenCubes","outputs":[{"internalType":"uint32","name":"lastWithdrawTime","type":"uint32"},{"internalType":"uint256","name":"withdrawAmount","type":"uint256"},{"internalType":"uint256","name":"newIncomeAmount","type":"uint256"},{"internalType":"uint256","name":"leftAmount","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"token_","type":"address"}],"name":"withdraw","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdrawETH","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}];
             
-            var BANK_ADDRESS = '0xb7322abba8544b17002eb39d70ecb435b8af1257'; // 必须写死，固定合约地址
+            var BANK_ADDRESS = '<?=$address ?>'; // 必须写死，固定合约地址
 
 
             $('#wallet_address').on('click', function() {
