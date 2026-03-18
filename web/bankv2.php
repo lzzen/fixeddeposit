@@ -171,7 +171,10 @@ function render($data)
 	
 
 
-    <div style="position:fixed;top:5px;right:10px;">Address : <span id="wallet_address">点击连接</span></div>
+    <div style="position:fixed;top:5px;right:10px;text-align:right;">
+        <div>Network: <span id="network_name">未连接</span> <button id="switch_network" style="padding:5px 10px;cursor:pointer;">切换网络</button></div>
+        <div style="margin-top:5px;">Address : <span id="wallet_address" style="cursor:pointer;">点击连接</span></div>
+    </div>
 
 
 
@@ -189,7 +192,57 @@ function render($data)
             const signer = provider.getSigner();
             const addr = await signer.getAddress();
             console.log("Account:", addr);
-            $('#wallet_address').text(addr)
+            $('#wallet_address').text(addr);
+            
+            // 获取当前网络
+            const network = await provider.getNetwork();
+            updateNetworkDisplay(network);
+        }
+        
+        function updateNetworkDisplay(network) {
+            const networkNames = {
+                1: 'Ethereum Mainnet',
+                11155111: 'Sepolia Testnet',
+                56: 'BSC Mainnet',
+                97: 'BSC Testnet',
+                137: 'Polygon Mainnet',
+                80001: 'Polygon Mumbai'
+            };
+            const name = networkNames[network.chainId] || `Chain ID: ${network.chainId}`;
+            $('#network_name').text(name);
+        }
+        
+        async function switchToNetwork(chainId) {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x' + chainId.toString(16) }],
+                });
+            } catch (switchError) {
+                // 如果网络不存在，尝试添加
+                if (switchError.code === 4902) {
+                    const chainConfigs = {
+                        11155111: {
+                            chainId: '0x' + (11155111).toString(16),
+                            chainName: 'Sepolia',
+                            rpcUrls: ['https://sepolia.infura.io/v3/'],
+                            blockExplorerUrls: ['https://sepolia.etherscan.io']
+                        }
+                    };
+                    if (chainConfigs[chainId]) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [chainConfigs[chainId]],
+                            });
+                        } catch (addError) {
+                            console.error('Failed to add network:', addError);
+                        }
+                    }
+                } else {
+                    console.error('Failed to switch network:', switchError);
+                }
+            }
         }
 
         $(function() {
@@ -219,6 +272,25 @@ function render($data)
                 }
                 connectToMetamask();
             });
+            
+            $('#switch_network').on('click', function() {
+                if(!window.ethereum){
+                    alert("请先安装Metamask浏览器扩展");
+                    return false;
+                }
+                // 切换到 Sepolia 测试网 (11155111)
+                switchToNetwork(11155111);
+            });
+            
+            // 监听网络变化
+            if (window.ethereum) {
+                window.ethereum.on('chainChanged', async () => {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const network = await provider.getNetwork();
+                    updateNetworkDisplay(network);
+                    location.reload();
+                });
+            }
 
 
             $('.btn_query_tiqu').click(function() {
