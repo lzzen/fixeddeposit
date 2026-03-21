@@ -80,16 +80,25 @@ $resp = http_get($url, $header);
 // renderOKT removed — unused helper
 
 //{"address":"0xd7349e91868ce73401b584000f04fcc087296ddb","ETH":{"price":{"rate":647.0953841083967,"diff":-3.5,"diff7d":-0.02,"ts":1773851160,"marketCapUsd":88236494354.33638,"availableSupply":136357786.69,"volume24h":1783662518.0848389,"volDiff1":500.9971318549357,"volDiff7":-12.243527952265666,"volDiff30":-40.36711644004981,"diff30d":5.3129442817476615},"balance":0,"rawBalance":"0"},"contractInfo":{"creatorAddress":"0x31f19ae6248dd80e2c6d2eb26552d5aa089f10d5","creationTransactionHash":"0xfd253d70e98355a33d0900a03787453cd5ba8fb2f435950e1d616aa5e426ad03","creationTimestamp":1773766736},"tokens":[{"tokenInfo":{"address":"0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c","decimals":"18","lastUpdated":1773851945,"name":"Binance Bitcoin","owner":"0xf68a4b64162906eff0ff6ae34e2bb1cd42fef62d","price":{"rate":71496,"diff":-3.03,"diff7d":0,"ts":1773849959,"marketCapUsd":0,"availableSupply":0,"volume24h":59734051.316728234,"volDiff1":-43.0693477171886,"volDiff7":-15.280794887106481,"volDiff30":-35.205587066048565,"diff30d":3.9997989507397875,"currency":"USD"},"symbol":"BTCB","totalSupply":"65300969964784133902393","holdersCount":1443434,"ethTransfersCount":0},"balance":39173270285466,"rawBalance":"39173270285466"},{"tokenInfo":{"address":"0xa35fe789a61f47c2c65693ece9a7080aa1a63332","decimals":"18","lastUpdated":1773780059,"name":"财富风口(Wealth Windfall)","owner":"","price":false,"symbol":"财富风口","totalSupply":"1000000000000000000000000000","holdersCount":87,"ethTransfersCount":0},"balance":10000000000000000000,"rawBalance":"10000000000000000000"}]}
+//return [usd:xxx]
+function getCGCprice($ids='hyperliquid', $field='usd'){
+    $url='https://api.coingecko.com/api/v3/simple/price?ids='.$ids.'&vs_currencies=usd,btc,cny';
+    $rs = http_get($url, ['User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Hyperliquid-Price-Checker/1.0']); //{"hyperliquid":{"usd":39.69,"btc":0.00056134,"cny":273.33}}
+    echo '<p style="font-size:12px;color:#999">'.$rs.'</p>';
+    $res = json_decode($rs, true);
+    return $res[$ids][$field] ?? null;
+}
 function rendEthRow($eth, $name='ETH'){
     // $balance = substr($eth['rawBalance'], 0, 6) * pow(10,(strlen($eth['rawBalance'])-6-$token['tokenInfo']['decimals']));
     // var_dump($eth);
     $balance = $eth<=0 ? 0 : substr($eth,0,-10)/100000000;
     $tkaddr= '0x0000000000000000000000000000000000000000';
+    $price = getCGCprice();
     $row = [
     '合约地址' => $tkaddr,
     '币种' => $name,
     '余额' => number_format($balance, 6),
-    '市值(USD)' => 0,
+    '市值(USD)' => number_format($balance*$price, 2),
     '提取时间' => '<button data-token="' . $tkaddr . '" class="btn_query_tiqu">QUERY</button> <span></span>',
     '本站提取' => '<button data-iseth="1" data-token="' . $tkaddr . '" class="btn_query_tiqu_2">提现</button> <span></span>',
     '操作' => '<a href="https://hyperevmscan.io/address/0xd7349e91868ce73401b584000f04fcc087296ddb#readContract" target="btcbank">查看合约</a>',
