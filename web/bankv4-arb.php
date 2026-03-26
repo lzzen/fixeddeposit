@@ -140,10 +140,11 @@ function render($usdcBalance)
 <head>
     <script src="jquery.min.js"></script>
     <script src="ethers.umd.min.js" type="application/javascript"></script>
+    <title>私人银行v1.4.0 Arbitrum链</title>
 </head>
 
 <body>
-    <h1>私人银行v1.2.0</h1>
+    <h1>私人银行v1.4.0 Arbitrum链</h1>
 	<div>
 	    <textarea><?=$resp?></textarea>
 	</div>
