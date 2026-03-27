@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>康威生命游戏 - 元胞自动机</title>
+<style>
+body {
+  background: #1a1a1a;
+  color: #fff;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  padding-top: 20px;
+}
+#container {
+  display: inline-block;
+  border: 2px solid #666;
+}
+#controls {
+  margin: 15px 0;
+}
+button {
+  padding: 8px 16px;
+  margin: 0 5px;
+  font-size: 14px;
+  cursor: pointer;
+  background: #333;
+  color: white;
+  border: 1px solid #888;
+  border-radius: 4px;
+}
+button:hover {
+  background: #555;
+}
+</style>
+</head>
+<body>
+<h1>康威生命游戏 · 元胞自动机</h1>
+<div id="controls">
+  <button id="start">开始/暂停</button>
+  <button id="reset">重置随机</button>
+  <button id="clear">清空</button>
+</div>
+<div id="container"></div>
+
+<script>
+const cols = 80;
+const rows = 40;
+const cellSize = 10;
+let grid = createGrid();
+let running = false;
+let animationId = null;
+
+// 创建网格
+function createGrid() {
+  return Array(rows).fill().map(() => 
+    Array(cols).fill().map(() => Math.random() > 0.7)
+  );
+}
+
+// 绘制网格
+function drawGrid() {
+  const container = document.getElementById('container');
+  container.innerHTML = '';
+  container.style.display = 'grid';
+  container.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const cell = document.createElement('div');
+      cell.style.width = `${cellSize}px`;
+      cell.style.height = `${cellSize}px`;
+      cell.style.backgroundColor = grid[y][x] ? '#00ffcc' : '#222';
+      cell.style.border = '1px solid #333';
+      cell.onclick = () => { grid[y][x] = !grid[y][x]; drawGrid(); };
+      container.appendChild(cell);
+    }
+  }
+}
+
+// 计算下一代
+function nextGen() {
+  const newGrid = grid.map(arr => [...arr]);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      let neighbors = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          const nx = (x + dx + cols) % cols;
+          const ny = (y + dy + rows) % rows;
+          if (grid[ny][nx]) neighbors++;
+        }
+      }
+      if (grid[y][x]) {
+        if (neighbors < 2 || neighbors > 3) newGrid[y][x] = false;
+      } else {
+        if (neighbors === 3) newGrid[y][x] = true;
+      }
+    }
+  }
+  grid = newGrid;
+}
+
+// 循环动画
+function loop() {
+  nextGen();
+  drawGrid();
+  if (running) animationId = requestAnimationFrame(loop);
+}
+
+// 控制按钮
+document.getElementById('start').onclick = () => {
+  running = !running;
+  if (running) loop();
+  else cancelAnimationFrame(animationId);
+};
+
+document.getElementById('reset').onclick = () => {
+  grid = createGrid();
+  drawGrid();
+};
+
+document.getElementById('clear').onclick = () => {
+  grid = Array(rows).fill().map(() => Array(cols).fill(false));
+  drawGrid();
+};
+
+// 初始化
+drawGrid();
+</script>
+</body>
+</html>
