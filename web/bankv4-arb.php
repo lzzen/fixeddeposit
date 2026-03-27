@@ -147,6 +147,7 @@ function render($usdcBalance)
     <h1>私人银行v1.4.0 Arbitrum链</h1>
 	<div>
 	    <textarea><?=$resp?></textarea>
+	    polygon链也已部署同地址合约，即使转错链也没关系。
 	</div>
 	
     <?php //echo render(json_decode($resp, true)['data'][0]['tokenList']); ?>
